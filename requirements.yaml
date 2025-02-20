@@ -1,0 +1,7 @@
+# List of required roles, file has the standard format as per
+# Ansible documentation: https://docs.ansible.com/ansible/latest/galaxy/user_guide.html#installing-multiple-roles-from-a-file
+# Install roles in the ./roles subdirectory
+# __Sample entry__
+#- name:     example-role
+#  src:      git+git@github.com:saydigital/ans_role-example.git
+#  version: "test"

@@ -1,0 +1,3 @@
+---
+# Set any needed variables here; is sensitive variables are used this file must be encrypted with ansible-vault.
+# my_var: "super-safe-pass"

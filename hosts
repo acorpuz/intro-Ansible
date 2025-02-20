@@ -1,0 +1,5 @@
+# host inventory file in .ini format
+# if dynamic inventories are used a different file could be used
+
+[localhost]
+localhost ansible_connection=local
