@@ -1,0 +1,17 @@
+# default servers to catch all undefined domains
+server {
+    listen          80       default_server;
+    server_name     _;
+
+
+    # log files
+    access_log              /var/log/nginx/{{ site_name }}.access.log;
+    error_log               /var/log/nginx/{{ site_name }}.error.log;
+
+    root    /var/www/html/{{ site_name }};
+    index   index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+}

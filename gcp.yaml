@@ -4,3 +4,11 @@ projects:
   - meetup-demo-443710
 auth_kind: serviceaccount
 service_account_file: ansible.json
+
+keyed_groups:
+  - key: name
+    prefix: name
+  - key: labels
+    prefix: label
+groups:
+  webserver: "'webserver' in name"

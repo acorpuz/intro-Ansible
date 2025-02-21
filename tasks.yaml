@@ -2,6 +2,7 @@
 # Main task file for the playbook
 - name: "General tasks"
   hosts: all
+  become: true
 
   pre_tasks:
     - name: "{{ ansible_play_name }} | Update apt repositories, install required packages"
@@ -19,13 +20,7 @@
       ansible.builtin.apt:
         force_apt_get: True
         autoclean: True
-
-    - name: restart_sshguard
-      ansible.builtin.systemd:
-        name: sshguard.service
-        state: restarted
-        enabled: "yes"
-
+    # - import_tasks: handlers.yaml
 
   tasks:
     - name: "{{ ansible_play_name }} | Update system"
@@ -37,16 +32,65 @@
     - name: "{{ ansible_play_name }} | Install needed packages"
       ansible.builtin.apt:
         name: [
-          apticron, at, vim, git, sshguard, nginx
+          apticron, at, vim, git
         ]
         state: present
         force_apt_get: true
       notify: clean_aptcache
 
-    - name: "{{ ansible_play_name }} | set sshguard watched files"
-      ansible.builtin.lineinfile:
-        path: "/etc/sshguard/sshguard.conf"
-        regexp: "^FILES="
-        line: 'FILES="/var/log/auth.log /var/log/syslog /var/log/mail.log"'
-      notify: restart_sshguard
+
+- name: "Webserver tasks"
+  hosts: webserver
+  become: true
+
+  handlers:
+    - name: clean_aptcache
+      ansible.builtin.apt:
+        force_apt_get: True
+        autoclean: True
+    - name: restart_nginx
+      ansible.builtin.systemd:
+        name: nginx.service
+        state: restarted
+        enabled: "yes"
+
+  vars:
+    site_name: "turing"
+  tasks:
+
+    - name: "{{ ansible_play_name }} | Install nginx"
+      ansible.builtin.apt:
+        name: [
+          nginx
+        ]
+        state: present
+        force_apt_get: true
+      notify: clean_aptcache
+
+    - name: "{{ ansible_play_name }} | site directory"
+      ansible.builtin.file:
+        path: "/var/www/html/{{ site_name }}"
+        state: directory
+    - name: "{{ ansible_play_name }} | copy site files"
+      ansible.builtin.copy:
+        src: "files/{{ item }}"
+        dest: "/var/www/html/{{ site_name }}"
+      loop:
+        - "custom.css"
+        - "index.html"
+    - name: "{{ ansible_play_name }} | disable default site"
+      ansible.builtin.file:
+        path: "/etc/nginx/sites-enabled/default"
+        state: absent
+    - name: "{{ ansible_play_name }} | activate sample site"
+      ansible.builtin.template:
+        src: "nginx.jinja"
+        dest: "/etc/nginx/sites-available/{{ site_name }}.conf"
+        mode: "0644"
+    - name: "{{ ansible_play_name }} | Activate nginx site"
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ site_name }}.conf"
+        dest: "/etc/nginx/sites-enabled/{{ site_name }}.conf"
+        state: link
+      notify: restart_nginx
       ignore_errors: "{{ ansible_check_mode }}"

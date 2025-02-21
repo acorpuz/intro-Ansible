@@ -1,0 +1,17 @@
+body {
+    font-family: 'Montserrat', ;
+}
+
+.maintenance-text h1 {
+    font-weight: 400;
+}
+
+.maintenance-text h2 {
+    font-weight: 300;
+}
+
+@media (min-width: 1200px) {
+    .maintenance-text h1 {
+        font-size: 4.0rem;
+    }
+}
