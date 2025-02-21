@@ -1,0 +1,7 @@
+[defaults]
+inventory           = gcp.yaml
+host_key_checking   = False 
+ansible_become      = True
+connection          = ssh  
+remote_user         = <the service account username in the form sa_########>
+private_key_file    = /path/to/the/ssh/private/key

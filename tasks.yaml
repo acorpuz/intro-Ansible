@@ -1,2 +1,52 @@
 ---
 # Main task file for the playbook
+- name: "General tasks"
+  hosts: all
+
+  pre_tasks:
+    - name: "{{ ansible_play_name }} | Update apt repositories, install required packages"
+      ansible.builtin.apt:
+        name: [
+          apt-transport-https, ca-certificates, gnupg, curl
+        ]
+        update_cache: true
+        force_apt_get: true
+        cache_valid_time: 3600
+
+
+  handlers:
+    - name: clean_aptcache
+      ansible.builtin.apt:
+        force_apt_get: True
+        autoclean: True
+
+    - name: restart_sshguard
+      ansible.builtin.systemd:
+        name: sshguard.service
+        state: restarted
+        enabled: "yes"
+
+
+  tasks:
+    - name: "{{ ansible_play_name }} | Update system"
+      ansible.builtin.apt:
+        upgrade: safe
+        force_apt_get: true
+      notify: clean_aptcache
+
+    - name: "{{ ansible_play_name }} | Install needed packages"
+      ansible.builtin.apt:
+        name: [
+          apticron, at, vim, git, sshguard, nginx
+        ]
+        state: present
+        force_apt_get: true
+      notify: clean_aptcache
+
+    - name: "{{ ansible_play_name }} | set sshguard watched files"
+      ansible.builtin.lineinfile:
+        path: "/etc/sshguard/sshguard.conf"
+        regexp: "^FILES="
+        line: 'FILES="/var/log/auth.log /var/log/syslog /var/log/mail.log"'
+      notify: restart_sshguard
+      ignore_errors: "{{ ansible_check_mode }}"

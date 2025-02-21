@@ -1,0 +1,6 @@
+---
+plugin: gcp_compute
+projects:
+  - meetup-demo-443710
+auth_kind: serviceaccount
+service_account_file: ansible.json
